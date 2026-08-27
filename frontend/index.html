@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Synthetic Media Detector</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Synthetic Media Detector</h1>
+    <p class="subtitle">Upload an image or short video to check it for AI-generated or face-swapped content.</p>
+  </header>
+
+  <main>
+    <section id="drop-zone" class="drop-zone">
+      <p><strong>Drag &amp; drop</strong> an image or video here, or click to choose a file.</p>
+      <input type="file" id="file-input" accept="image/*,video/*" hidden />
+      <p class="hint">Supported: JPG, PNG, MP4, MOV — faces only, see limitations below.</p>
+    </section>
+
+    <p id="status" class="status" hidden></p>
+
+    <section id="result" class="result" hidden>
+      <div class="verdict-row">
+        <span id="verdict-badge" class="badge"></span>
+        <span id="confidence-text"></span>
+        <button id="report-btn" class="report-btn" hidden>Download PDF report</button>
+      </div>
+
+      <div id="image-panels" class="panels" hidden>
+        <div class="panel">
+          <h3>Model attention (Grad-CAM)</h3>
+          <img id="heatmap-img" alt="Grad-CAM heatmap" />
+        </div>
+        <div class="panel">
+          <h3>Frequency spectrum (FFT)</h3>
+          <img id="fft-img" alt="FFT spectrum" />
+        </div>
+      </div>
+
+      <div id="video-panels" class="panels" hidden>
+        <div class="panel">
+          <h3>Per-frame timeline</h3>
+          <img id="timeline-img" alt="Per-frame fake probability timeline" />
+        </div>
+        <div class="panel">
+          <h3>Details</h3>
+          <ul id="video-details" class="details-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="limitations">
+      <h2>Limitations</h2>
+      <ul>
+        <li>Trained and evaluated on a face-swap/GAN face dataset — not a general "is this AI-generated" detector for arbitrary images.</li>
+        <li>Video is analyzed frame-by-frame with a face classifier, not a dedicated temporal/video model.</li>
+        <li>The temporal jitter score is an experimental heuristic, not a validated detector — camera shake in a real video can also score high.</li>
+        <li>Audio is out of scope.</li>
+        <li>Accuracy is limited to what the classifier saw during training — see README for measured metrics and dataset details.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
