@@ -67,7 +67,17 @@ Open http://localhost:8000 — upload an image or video and get a verdict with a
 
 ## Measured results
 
-Filled in after running `training/train.py` — see `models/metrics.json` for the exact numbers (accuracy / precision / recall / F1 / ROC-AUC on the held-out test split of the subsampled dataset).
+Fine-tuned for 4 epochs on a 12k-image subset (6k real / 6k fake) of the dataset, evaluated on a 2,400-image held-out test split (`models/metrics.json`):
+
+| Metric | Value |
+|---|---|
+| Accuracy | 88.1% |
+| Precision | 88.5% |
+| Recall | 87.6% |
+| F1 | 0.881 |
+| ROC-AUC | 0.948 |
+
+Training took under 5 minutes total on a single RTX 3050 (4GB) laptop GPU — only the classifier head and the last EfficientNet-B0 block were fine-tuned, per the scope decision above.
 
 ## Limitations (by design, not oversight)
 

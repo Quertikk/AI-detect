@@ -29,8 +29,8 @@ def generate_report(analysis: dict) -> bytes:
 
     verdict = analysis.get("verdict", "unknown").upper()
     confidence = analysis.get("confidence") or analysis.get("avg_prob_fake")
-    verdict_color = colors.red if verdict == "FAKE" else colors.green
-    story.append(Paragraph(f'Verdict: <font color="{verdict_color.hexval()}">{verdict}</font>', styles["Heading1"]))
+    verdict_color = "red" if verdict == "FAKE" else "green"
+    story.append(Paragraph(f'Verdict: <font color="{verdict_color}">{verdict}</font>', styles["Heading1"]))
     if confidence is not None:
         story.append(Paragraph(f"Confidence: {confidence * 100:.1f}%", styles["Normal"]))
     story.append(Spacer(1, 0.5 * cm))

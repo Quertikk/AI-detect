@@ -1,0 +1,13 @@
+{
+  "test": {
+    "accuracy": 0.88125,
+    "precision": 0.8854254422914911,
+    "recall": 0.8758333333333334,
+    "f1": 0.8806032677000419,
+    "roc_auc": 0.9479211805555555,
+    "n_samples": 2400
+  },
+  "dataset": "data/faces",
+  "epochs": 4,
+  "batch_size": 32
+}
