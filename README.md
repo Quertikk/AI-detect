@@ -43,7 +43,7 @@ pip install -r requirements.txt
 Requires a free Kaggle account and API token (`kaggle.json` from https://www.kaggle.com/settings, placed at `~/.kaggle/kaggle.json`, or the `KAGGLE_USERNAME`/`KAGGLE_KEY` env vars):
 
 ```bash
-python training/dataset_prep.py --per-class 5000
+python training/dataset_prep.py --per-class 6000
 ```
 
 Downloads the [140k Real and Fake Faces](https://www.kaggle.com/datasets/xhlulu/140k-real-and-fake-faces) dataset and writes a subsampled train/valid/test split to `data/faces/`.
@@ -51,7 +51,7 @@ Downloads the [140k Real and Fake Faces](https://www.kaggle.com/datasets/xhlulu/
 ### 3. Train the classifier
 
 ```bash
-python training/train.py --data data/faces --epochs 3 --batch-size 32
+python training/train.py --data data/faces --epochs 4 --batch-size 32
 ```
 
 Saves the best checkpoint to `models/classifier.pt` and test-set metrics to `models/metrics.json`.
