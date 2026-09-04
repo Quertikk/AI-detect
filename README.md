@@ -11,11 +11,10 @@ A web tool that checks whether a face photo or short video is real or AI-generat
 ## Architecture
 
 ```
-deepfake-detector/
-  backend/        FastAPI app: inference, Grad-CAM, FFT, video pipeline, PDF report
-  training/       Dataset prep + fine-tuning script for the classifier
-  frontend/       Static single-page UI (vanilla HTML/CSS/JS, no build step)
-  models/         Trained checkpoint + metrics (produced by training/train.py)
+backend/        FastAPI app: inference, Grad-CAM, FFT, video pipeline, PDF report
+training/       Dataset prep + fine-tuning script for the classifier
+frontend/       Static single-page UI (vanilla HTML/CSS/JS, no build step)
+models/         Trained checkpoint + metrics (produced by training/train.py)
 ```
 
 **Classifier**: EfficientNet-B0 (ImageNet-pretrained via `timm`), fine-tuned as a binary real/fake face classifier. Only the classifier head and the last backbone block are unfrozen, so fine-tuning is fast even on a small GPU.
