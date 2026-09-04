@@ -164,6 +164,19 @@ def get_report(analysis_id: str):
     )
 
 
+class NoCacheStaticFiles(StaticFiles):
+    """Static files with no Cache-Control/Last-Modified caching.
+
+    Without this, browsers apply a heuristic cache lifetime to files served
+    with only a Last-Modified header, so an edited frontend file can keep
+    loading a stale cached copy long after the change is saved."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 frontend_dir = BASE_DIR / "frontend"
 if frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+    app.mount("/", NoCacheStaticFiles(directory=str(frontend_dir), html=True), name="frontend")
