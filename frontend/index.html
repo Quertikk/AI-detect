@@ -4,7 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Synthetic Media Detector</title>
-<link rel="stylesheet" href="styles.css" />
+<!-- ?v= is a cache buster: bump it whenever styles.css or app.js changes, so
+     browsers holding an older copy can't mix a stale script with fresh markup. -->
+<link rel="stylesheet" href="styles.css?v=2" />
 </head>
 <body>
   <header>
@@ -19,16 +21,20 @@
       <p class="hint">Supported: JPG, PNG, MP4, MOV — faces only, see limitations below.</p>
     </section>
 
-    <p id="status" class="status" hidden></p>
+    <!-- Initial visibility is set with inline styles rather than the `hidden`
+         attribute: `.result`/`.panels` set a `display` value, which outranks
+         `[hidden]`'s default `display: none`, so the panels would flash up
+         empty (with broken <img> icons) before any analysis has run. -->
+    <p id="status" class="status" style="display: none"></p>
 
-    <section id="result" class="result" hidden>
+    <section id="result" class="result" style="display: none">
       <div class="verdict-row">
         <span id="verdict-badge" class="badge"></span>
         <span id="confidence-text"></span>
-        <button id="report-btn" class="report-btn" hidden>Download PDF report</button>
+        <button id="report-btn" class="report-btn" style="display: none">Download PDF report</button>
       </div>
 
-      <div id="image-panels" class="panels" hidden>
+      <div id="image-panels" class="panels" style="display: none">
         <div class="panel">
           <h3>Model attention (Grad-CAM)</h3>
           <img id="heatmap-img" alt="Grad-CAM heatmap" />
@@ -39,7 +45,7 @@
         </div>
       </div>
 
-      <div id="video-panels" class="panels" hidden>
+      <div id="video-panels" class="panels" style="display: none">
         <div class="panel">
           <h3>Per-frame timeline</h3>
           <img id="timeline-img" alt="Per-frame fake probability timeline" />
@@ -63,6 +69,6 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

@@ -14,6 +14,12 @@ const videoDetails = document.getElementById("video-details");
 
 let currentAnalysisId = null;
 
+// Visibility is driven by inline styles, not the `hidden` attribute: the
+// stylesheet gives .result/.panels an explicit `display`, which would win over
+// `[hidden]`. Clearing the inline value lets the stylesheet's layout apply.
+function show(el) { el.style.display = ""; }
+function hide(el) { el.style.display = "none"; }
+
 dropZone.addEventListener("click", () => fileInput.click());
 dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
@@ -27,7 +33,7 @@ fileInput.addEventListener("change", () => {
 });
 
 function setStatus(text) {
-  statusEl.hidden = !text;
+  if (text) { show(statusEl); } else { hide(statusEl); }
   statusEl.textContent = text || "";
 }
 
@@ -39,8 +45,8 @@ function handleFile(file) {
     return;
   }
 
-  resultEl.hidden = true;
-  reportBtn.hidden = true;
+  hide(resultEl);
+  hide(reportBtn);
   setStatus(`Analyzing ${file.name}...`);
 
   const formData = new FormData();
@@ -64,25 +70,25 @@ function showVerdict(verdict, confidence) {
   verdictBadge.textContent = verdict;
   verdictBadge.className = `badge ${verdict}`;
   confidenceText.textContent = `Confidence: ${(confidence * 100).toFixed(1)}%`;
-  resultEl.hidden = false;
+  show(resultEl);
 }
 
 function renderImageResult(data) {
   currentAnalysisId = data.id;
   showVerdict(data.verdict, data.confidence);
-  imagePanels.hidden = false;
-  videoPanels.hidden = true;
   heatmapImg.src = data.heatmap;
   fftImg.src = data.fft;
-  reportBtn.hidden = false;
+  show(imagePanels);
+  hide(videoPanels);
+  show(reportBtn);
 }
 
 function renderVideoResult(data) {
   currentAnalysisId = data.id;
   showVerdict(data.verdict, data.avg_prob_fake >= 0.5 ? data.avg_prob_fake : 1 - data.avg_prob_fake);
-  imagePanels.hidden = true;
-  videoPanels.hidden = false;
   timelineImg.src = data.timeline;
+  hide(imagePanels);
+  show(videoPanels);
 
   videoDetails.innerHTML = "";
   const items = [
@@ -98,7 +104,7 @@ function renderVideoResult(data) {
     li.textContent = `${label}: ${value}`;
     videoDetails.appendChild(li);
   }
-  reportBtn.hidden = false;
+  show(reportBtn);
 }
 
 reportBtn.addEventListener("click", () => {
