@@ -11,15 +11,23 @@ A web tool that checks whether a face photo or short video is real or AI-generat
 ## Architecture
 
 ```
-backend/        FastAPI app: inference, Grad-CAM, FFT, video pipeline, PDF report
+backend/        FastAPI app: inference, Grad-CAM, FFT, video pipeline, marketplace moderation, PDF report
 training/       Dataset prep + fine-tuning script for the classifier
 frontend/       Static single-page UI (vanilla HTML/CSS/JS, no build step)
 models/         Trained checkpoint + metrics (produced by training/train.py)
+docs/           Project reports
 ```
+
+## Reports
+
+- [Synthetic Face Detection via Transfer Learning](docs/report-ai-models.md) — model architecture, pre-training/fine-tuning methodology, training protocol, measured results, explainability.
+- [Synthetic Identity Detection for Marketplace Trust & Safety](docs/report-ecommerce.md) — the e-commerce application: seller and reviewer identity fraud, the moderation policy, and its evaluation.
 
 **Classifier**: EfficientNet-B0 (ImageNet-pretrained via `timm`), fine-tuned as a binary real/fake face classifier. Only the classifier head and the last backbone block are unfrozen, so fine-tuning is fast even on a small GPU.
 
 **Video handling**: no separate video model is trained. Frames are sampled at a fixed interval, a face is detected per frame (OpenCV Haar cascade), and each face crop is scored by the same image classifier. Scores are aggregated into a video-level verdict, plus an experimental face-bounding-box jitter heuristic reported for context (not used in the verdict).
+
+**Marketplace moderation** (`POST /api/moderate/listing`): scores the images of a marketplace listing that contain faces — seller avatars, reviewer avatars, verification selfies — weights them by role, applies escalation rules for identity fraud and review-farm patterns, and returns an `approve`/`review`/`block` decision with plain-language reasons. Images with no detectable face are reported out of scope and excluded rather than given a score the model cannot justify.
 
 **Explainability, not just a score**:
 - Grad-CAM overlay showing which image regions most influenced the model's output.
@@ -84,5 +92,6 @@ Training took under 5 minutes total on a single RTX 3050 (4GB) laptop GPU — on
 - **Video is frame-level, not temporal**: each frame is scored independently by the image classifier; there is no dedicated video/temporal model. This is a deliberate scope decision to keep training time small.
 - **Temporal jitter score is experimental**: it measures face bounding-box position/size fluctuation across sampled frames and is reported for context only — it is not used to compute the verdict, and a real video with camera shake can also score high on it.
 - **No audio analysis.**
+- **Marketplace moderation scores faces only**: product photography is deliberately not assessed — it is outside the classifier's trained domain, and AI-rendered product images are usually legitimate. A `block` decision is designed to gate a human review queue, not to trigger an automatic ban.
 - **Generalization is bounded by training data**: the classifier will be less reliable on generators/manipulation techniques not represented in its training set.
 - **In-memory analysis store**: the backend keeps recent results in memory (capped, most-recent-evicted) so the PDF report endpoint can look them up; this is fine for a live demo, not a production deployment.

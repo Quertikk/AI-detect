@@ -16,13 +16,14 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
 from charts import render_timeline_png
+from ecommerce import ImageRole, MarketplaceScorer
 from fft_analysis import compute_fft_spectrum
 from model import DeepfakeClassifier
 from report import generate_report
@@ -41,14 +42,16 @@ app.add_middleware(
 
 classifier: DeepfakeClassifier | None = None
 video_analyzer: VideoAnalyzer | None = None
+marketplace_scorer: MarketplaceScorer | None = None
 analyses: "OrderedDict[str, dict]" = OrderedDict()
 
 
 @app.on_event("startup")
 def load_model() -> None:
-    global classifier, video_analyzer
+    global classifier, video_analyzer, marketplace_scorer
     classifier = DeepfakeClassifier()
     video_analyzer = VideoAnalyzer(classifier)
+    marketplace_scorer = MarketplaceScorer(classifier)
 
 
 def _store(analysis: dict) -> str:
@@ -148,6 +151,41 @@ async def analyze_video(file: UploadFile = File(...)):
         "frame_results": result["frame_results"],
         "timeline": _png_to_data_uri(timeline_png),
     }
+
+
+@app.post("/api/moderate/listing")
+async def moderate_listing(
+    files: list[UploadFile] = File(...),
+    roles: list[str] = Form(...),
+):
+    """Score a marketplace listing's identity images and return a moderation decision.
+
+    `roles` must line up with `files` positionally - one role per uploaded image.
+    """
+    if marketplace_scorer is None:
+        raise HTTPException(503, "Model not loaded yet")
+
+    if len(files) != len(roles):
+        raise HTTPException(400, f"Got {len(files)} file(s) but {len(roles)} role(s) - they must match.")
+
+    valid_roles = {r.value for r in ImageRole}
+    assessments = []
+    for upload, raw_role in zip(files, roles):
+        if raw_role not in valid_roles:
+            raise HTTPException(400, f"Unknown role '{raw_role}'. Expected one of: {sorted(valid_roles)}")
+
+        raw = await upload.read()
+        try:
+            image = Image.open(io.BytesIO(raw))
+            image.load()
+        except Exception:
+            raise HTTPException(400, f"Could not read '{upload.filename}' as an image")
+
+        assessments.append(
+            marketplace_scorer.assess_image(image, ImageRole(raw_role), upload.filename or "unnamed")
+        )
+
+    return marketplace_scorer.score_listing(assessments)
 
 
 @app.get("/api/report/{analysis_id}")
